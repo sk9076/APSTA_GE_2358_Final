@@ -1,7 +1,9 @@
 # APSTA-GE-2353 Capstone Project
 
 Fabin Froelich (ff2093@nyu.edu) 
+
 Sooyoung Kim (sk9076@nyu.edu)
+
 Simon Liao (cl6399@nyu.edu) 
 
 ## Overview of the project 
@@ -46,11 +48,3 @@ To build a Shiny application that can inform the infectious disease control prog
 5. 	Liyanage, P., et al., Evaluation of intensified dengue control measures with interrupted time series analysis in the Panadura Medical Officer of Health division in Sri Lanka: a case study and cost-effectiveness analysis. The Lancet Planetary Health, 2019. 3(5): p. e211-e218.
 6. 	Baly, A., et al., Costs of dengue prevention and incremental cost of dengue outbreak control in Guantanamo, Cuba. Trop Med Int Health, 2012. 17(1): p. 123-32.
 7. 	Constenla, D., C. Garcia, and N. Lefcourt, Assessing the Economics of Dengue: Results from a Systematic Review of the Literature and Expert Survey. Pharmacoeconomics, 2015. 33(11): p. 1107-35.
-8. 	Farrel, S., UX Research Cheat Sheet, in Nielsen Norman Group. 2017.
-9. 	Rohrer, C., When to Use Which User-Experience Research Methods. 2014.
-10. Rubin, J. and D. Chisnell, Handbook of usability testing: how to plan, design and conduct effective tests. 2008: John Wiley & Sons.
-11. Nielsen, J., Usability 101: Introduction to Usability, in Nielsen Norman Group. 2012.
-12. Nielsen, J., 10 Usability Heuristics for User Interace Design, in Nielsen Norman Group. 1994.
-
-
-
