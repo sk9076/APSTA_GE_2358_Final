@@ -28,7 +28,7 @@ To build a Shiny application that can inform the infectious disease control prog
 |-----------------------------------------------------|--------------------------------|---------------------------------------------------------------------|
 | Team introduction                                   |   April 11, 2022               |  N/A                                                                |
 | Development of user research plan (design plan)     |   April 18, 2022               |  [User research/design plan](https://docs.google.com/document/d/1t9ZgOPcFT7rDFDlWfWsLlgWZNPPQ7JuB8Cz_U5okb6c/edit?usp=sharing)                                          |
-| User research (Dr. Yesim Tozan)                     |   Potentially April 22, 2022   |  [Findings from design research phase I](https://docs.google.com/document/d/1q7zuqgdYAc4IIdkG1ZQOf-q160EIXHX__tkO1gUecN8/edit?usp=sharing)                              |
+| User research (Dr. Yesim Tozan)                     |   April 22, 2022               |  [Findings from design research phase I](https://docs.google.com/document/d/1q7zuqgdYAc4IIdkG1ZQOf-q160EIXHX__tkO1gUecN8/edit?usp=sharing)                              |
 | 1st prototype development                           |                                |  1st Shiny Prototype                                                |
 | User test (Dr. Yesim Tozan)                         |                                |  User test report                                                   |
 | 2nd prototype development for course submission     |                                |  2nd Shiny Prototype                                                |
