@@ -197,14 +197,15 @@ server <- function(input, output) {
       output[[1]] <-sliderInput("n_pop", "size of the target population", value = people_value, min = people_min , max = people_max)
       
       #infected people
-      output[[2]] <-sliderInput("n_recovered", "% of population who got malaria in the past 12 months (%)", value = 0, min = 0, max = 100)
+      output[[2]] <-sliderInput("n_recovered", "% of population who got COVID-19 in the past 12 months (%)", value = 0, min = 0, max = 100)
       
+      if("Vaccination" %in% input$interventions){
       #1st dose vaccine
       output[[3]] <-sliderInput("n_vacc_1", "% of population who only received the 1st dose of vaccine", value = 0, min = 0, max = 100)
       
       #second dose vaccine
       output[[4]] <-sliderInput("n_vacc_2", "% of population who received the 2nd dose vaccine", value = 0, min = 0, max = 100)
-      
+      }
       # population parameters for covid
       }else if(input$disease == "malaria"){
         # population size
