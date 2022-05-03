@@ -1,5 +1,6 @@
 library(shiny)
 library(shinydashboard)
+library(shinyalert)
 
 
 # source the function scripts
@@ -153,6 +154,7 @@ shinyServer(function(input, output) {
     # run the model
     observeEvent(input$run_model, {
         isolate({
+            if(input$disease=="covid-19"){
             # update the model parameters
             rv$init_n$R <- input$n_pop*input$p_recovered
             rv$init_n$S <- input$n_pop -sum(unlist(rv$init_n)[-1])
@@ -199,6 +201,9 @@ shinyServer(function(input, output) {
                               func= ifelse(sum("Quarantine" %in% input$interventions, na.rm=T)>0, M1_q,M1),
                               parms=unlist(rv$parm_int), 
                               method = "rk4") %>% as.data.frame() 
+            }else{
+                shinyalert("Oops!", "Malaria model is currently not available. Try COVID-19 instead!", type = "error")
+            }
         })    
 
     })
