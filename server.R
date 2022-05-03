@@ -25,7 +25,7 @@ shinyServer(function(input, output) {
                         "Bednet")
         ),
         
-        # Model parameters
+        # Model parameters (now for COVID only)
         init_n = init_12,
         parm_base = parm,
         parm_int = parm,
