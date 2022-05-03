@@ -92,11 +92,12 @@ ui <- dashboardPage(
                 
                 #box for population parameters
                 column(12, 
+                       box(
                 box(
                        #population parameters - change people_min, people_max in header
                        h5(strong("Population parameters"), align = "center", style = "color:orange"),
                        
-                       uiOutput("pop_parm_tab"),
+                       uiOutput("pop_parm_tab")
                 
                 ), 
                 
@@ -104,7 +105,10 @@ ui <- dashboardPage(
                   #disease parameters 
                   h5(strong("Disease parameters"), align = "center", style = "color:orange"),
                   uiOutput("disease_parm_tab")
-                )
+                ),
+                width=12,
+                collapsible=T
+                       )
                       ),
                 
                 

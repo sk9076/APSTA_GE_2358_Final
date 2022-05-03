@@ -3,16 +3,10 @@
 tmax <- 365 # 12 months simulation
 
 # Vaccine-related parameters
-vac_daily <- 800000 # daily vaccine supply (needs to be set to 0 for base model)
+vac_daily <- 0 # daily vaccine supply (needs to be set to 0 for base model)
 ep <- 0.48 # 1-first dose efficacy(52%) (needs to be set to 0 for base model)
 epv <- 0.05 # 1-second dose efficacy(95%) (needs to be set to 0 for base model)
 tha <- 0.99 # Screening sensitivity (99%) (needs to be set to 0 for base model)
-
-# Cost parameters
-c_vac <- 120 # cost of vaccination (needs to be set to 0 for base model)
-c_hos <- 27562*rh # cost of hospitalization (needs to be set to 0 for base model)
-c_mild <- 72 # cost of outpatient visit (for mild cases) (needs to be set to 0 for base model)
-
 
 # Base parameters
 c <- 6.58 # effective contact rate
@@ -32,6 +26,10 @@ p <- 0.85 # % of people developing symptomatic infection
 q <- 0.2 # percentage developing severe symptoms
 u <- 0.115 # COVID-19 mortality among the hospitalized > CHANGE THIS
 
+# Cost parameters
+c_vac <- 120 # cost of vaccination (needs to be set to 0 for base model)
+c_hos <- 27562*rh # cost of hospitalization (needs to be set to 0 for base model)
+c_mild <- 72 # cost of outpatient visit (for mild cases) (needs to be set to 0 for base model)
 
 
 # Adjustment following Moghadas et al,.

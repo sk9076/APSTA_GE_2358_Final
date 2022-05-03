@@ -1,3 +1,4 @@
+require(pacman)
 pacman::p_load(ggplot2, deSolve, dplyr, magrittr, tidyverse, triangle, ggthemr)
 
 # define function
