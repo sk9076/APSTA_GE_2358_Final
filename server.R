@@ -201,14 +201,14 @@ shinyServer(function(input, output) {
                               func= ifelse(sum("Quarantine" %in% input$interventions, na.rm=T)>0, M1_q,M1),
                               parms=unlist(rv$parm_int), 
                               method = "rk4") %>% as.data.frame() 
+            browser()
             }else{
                 shinyalert("Oops!", "Malaria model is currently not available. Try COVID-19 instead!", type = "error")
             }
         })    
 
     })
-    browser()
-    
+
     set.seed(122)
     histdata <- rnorm(500)
     
