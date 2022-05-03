@@ -156,7 +156,7 @@ shinyServer(function(input, output) {
         isolate({
             if(input$disease=="covid-19"){
             # update the model parameters
-            rv$init_n$R <- input$n_pop*input$p_recovered
+            rv$init_n$R <- input$n_pop*input$p_recovered/100
             rv$init_n$S <- input$n_pop -sum(unlist(rv$init_n)[-1])
             
             rv$parm_base$a <- 1/input$dur_incub
@@ -169,8 +169,8 @@ shinyServer(function(input, output) {
             # adjust intervention parameters
             ## Vaccination
             if(sum("Vaccination" %in% input$interventions, na.rm=T)>0){
-                rv$init_n$V1 <- input$n_pop*input$p_vac_1
-                rv$init_n$V2 <- input$n_pop*input$p_vac_2
+                rv$init_n$V1 <- input$n_pop*input$p_vac_1/100
+                rv$init_n$V2 <- input$n_pop*input$p_vac_2/100
                 rv$init_n$S <- rv$init_n$S - rv$init_n$V1 - rv$init_n$V2
                 rv$parm_int$vac_daily <- input$vac_dose
             }
