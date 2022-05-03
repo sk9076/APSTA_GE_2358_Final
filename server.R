@@ -188,7 +188,7 @@ shinyServer(function(input, output) {
             }
             # run base model
             rv$res_base <- ode(y=unlist(rv$init_n),
-                               times=1:input$t_max,
+                               times=1:input$t_max*30,
                                func=M1,
                                parms=unlist(rv$parm_base), 
                                method = "rk4") %>% as.data.frame()
@@ -196,7 +196,7 @@ shinyServer(function(input, output) {
             
             # run intervention model
             rv$res_int <- ode(y=unlist(rv$init_n),
-                              times=1:input$t_max,
+                              times=1:input$t_max*30,
                               ## Run different model when Quarantine is chosen
                               func= ifelse(sum("Quarantine" %in% input$interventions, na.rm=T)>0, M1_q,M1),
                               parms=unlist(rv$parm_int), 
