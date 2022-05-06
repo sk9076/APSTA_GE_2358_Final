@@ -1,7 +1,7 @@
 library(shiny)
 library(shinydashboard)
 library(shinyalert)
-
+library(xtable)
 # source the function scripts
 source(here::here("model_scripts", "0_load_packages.R"))
 source(here::here("model_scripts", "2_M1_function.R"))
@@ -145,7 +145,6 @@ shinyServer(function(input, output) {
                 output[[4]]<-sliderInput("dur_asym", "Duration of Asymptomatic infection", value = 1, min = 0, max = 21)
                 output[[5]]<-sliderInput("eir", "Effective innoculation rate (infectious bites/person/6 months", value = 3.9, min = 0, max = 20)
             }
-            
             return(output)
         })
     })
@@ -157,7 +156,6 @@ shinyServer(function(input, output) {
             # update the model parameters
             rv$init_n$R <- input$n_pop*input$p_recovered/100
             rv$init_n$S <- input$n_pop -sum(unlist(rv$init_n)[-1])
-            
             rv$parm_base$a <- 1/input$dur_incub
             rv$parm_base$r <- 1/input$dur_mild
             rv$parm_base$rs <- 1/input$dur_sever
@@ -175,15 +173,15 @@ shinyServer(function(input, output) {
             }
             ## Mask
             if(sum("Mask mandate" %in% input$interventions, na.rm=T)>0){
-                rv$parm_int$c <- 0.7*rv$parm_int$c # effective contact reduced to 25% capacity (for esesntial activities)
+                rv$parm_int$c <- 0.7*rv$parm_int$c # effective contact reduced to 25% capacity (for essential activities)
             }
             ## Social distancing
             if(sum("Social distancing" %in% input$interventions, na.rm=T)>0){
-                rv$parm_int$c <- 0.5*rv$parm_int$c # effective contact reduced to 25% capacity (for esesntial activities)
+                rv$parm_int$c <- 0.5*rv$parm_int$c # effective contact reduced to 25% capacity (for essential activities)
             }
             ## Lock-down
             if(sum("Lock-down" %in% input$interventions, na.rm=T)>0){
-                rv$parm_int$c <- 0.25*rv$parm_int$c # effective contact reduced to 25% capacity (for esesntial activities)
+                rv$parm_int$c <- 0.25*rv$parm_int$c # effective contact reduced to 25% capacity (for essential activities)
             }
             # run base model
             rv$res_base <- ode(y=unlist(rv$init_n),
@@ -200,23 +198,48 @@ shinyServer(function(input, output) {
                               func= ifelse(sum("Quarantine" %in% input$interventions, na.rm=T)>0, M1_q,M1),
                               parms=unlist(rv$parm_int), 
                               method = "rk4") %>% as.data.frame() 
-            rv$histogram <- if(is.null(input$interventions)){
-              ggplot() +
-                geom_line(data = rv$res_base, 
-                          aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color="no intervention")) +
-                ylab("Daily Cases")
+            rv$daily_cases <- if(is.null(input$interventions)){
+              ggplot(data = rv$res_base, aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color ="no intervention")) +
+                geom_bar(stat="identity", width=0.01) +
+                theme_classic() +
+                ylab("Number of Cases") + 
+                ggtitle("Daily Cases") + 
+                theme(
+                  plot.title = element_text(color="black", size=20, face="bold.italic"))
             #browser()
             }
             else{
-              ggplot() + 
-                geom_line(data = rv$res_base, 
-                          aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color="no intervention")) +
-                geom_line(data = rv$res_int, 
+              ggplot(data = rv$res_base, 
+                     aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color="no intervention")) + 
+                geom_bar(stat="identity", width=0.01) +
+                geom_bar(data = rv$res_int, 
                           aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2,
-                              color="with intervention")) +
-                ylab("Daily Cases")
+                             color ="with intervention"),stat="identity", width=0.01) +
+                ylab("Number of Cases") + 
+                ggtitle("Daily Cases") + 
+                theme(
+                  plot.title = element_text(color="black", size=20, face="bold.italic"))
             }
-            #browser()
+            
+            rv$table_base <- rv$res_base %>%
+              tail(1) %>% 
+              transmute(total_case = as.integer(A+I+Q+H+AV1+IV1+QV1+HV1+AV2+IV2+QV2+HV2+R+RV1+RV2+D+DV1+DV2))
+            colnames(rv$table_base) = c("Without Intervention")
+            
+            rv$table_int <- rv$res_int %>%
+              tail(1) %>% 
+              transmute(total_case = as.integer(A+I+Q+H+AV1+IV1+QV1+HV1+AV2+IV2+QV2+HV2+R+RV1+RV2+D+DV1+DV2))
+            colnames(rv$table_int) = c("With Intervention")
+            
+            rv$table <- if(is.null(input$interventions)){
+              rv$table_base
+            }
+            else{
+              cbind(rv$table_base,rv$table_int)
+            }
+            rv$table <- cbind(data.frame(" "="Total Cases"),rv$table)
+              
+            # browser()
             }else{
                 shinyalert("Oops!", "Malaria model is currently not available. Try COVID-19 instead!", type = "error")
             }
@@ -224,11 +247,13 @@ shinyServer(function(input, output) {
 
     })
     
-    output$plot1 <- renderPlot({
-        rv$histogram
+    output$daily_cases <- renderPlot({
+        rv$daily_cases
     })
     output$table1 <- renderTable({
-      
-    })
+      rv$table
+    }, caption = "Summary Table",
+    caption.placement = getOption("xtable.caption.placement", "top"), 
+    caption.width = getOption("xtable.caption.width", NULL))
 
 })

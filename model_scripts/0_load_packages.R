@@ -1,5 +1,5 @@
 require(pacman)
-pacman::p_load(ggplot2, deSolve, dplyr, magrittr, tidyverse, triangle, ggthemr)
+pacman::p_load(ggplot2, deSolve, dplyr, magrittr, tidyverse, triangle) #ggthemr
 
 # define function
 gen_prob_param <- function(dta){

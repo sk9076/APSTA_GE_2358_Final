@@ -111,18 +111,12 @@ shinyUI(dashboardPage(
                     
                     # Outputs
                     fluidRow(
-                        
-                        #test histogram
-                        box(plotOutput("plot1", height = 250)),
-                        
-                        
+                        # plots
+                        box(plotOutput("daily_cases"))
                     ),
                     fluidRow(
-                      
-                      #test histogram
-                      box(textOutput("table1")),
-                      
-                      
+                      # summary table
+                      box(tableOutput("table1"))
                     )
             ),
             
