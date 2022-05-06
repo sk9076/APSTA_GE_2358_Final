@@ -105,7 +105,7 @@ shinyServer(function(input, output) {
                 # population parameters for covid
             }else if(input$disease == "malaria"){
                 # population size
-                output[[1]] <-sliderInput("n_pop", "Size of the target population", value = people_value, min = people_min , max = people_max)
+                output[[1]] <-sliderInput("n_pop", "Size of the target population", value = 1000000, min = 100 , max = 2000000)
                 
                 #infected people
                 output[[2]] <-sliderInput("n_recovered", "% of population who got malaria in the past 12 months", value = 0, min = 0, max = 100)
@@ -216,7 +216,7 @@ shinyServer(function(input, output) {
                               color="with intervention")) +
                 ylab("Daily Cases")
             }
-            # browser()
+            #browser()
             }else{
                 shinyalert("Oops!", "Malaria model is currently not available. Try COVID-19 instead!", type = "error")
             }
