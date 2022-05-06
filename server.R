@@ -201,6 +201,19 @@ shinyServer(function(input, output) {
                               func= ifelse(sum("Quarantine" %in% input$interventions, na.rm=T)>0, M1_q,M1),
                               parms=unlist(rv$parm_int), 
                               method = "rk4") %>% as.data.frame() 
+            rv$histogram <- if(is.null(input$interventions)){
+              ggplot() +
+                geom_line(data = rv$res_base, 
+                          aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color="no intervention"))
+            }
+            else{
+              ggplot() + 
+                geom_line(data = rv$res_base, 
+                          aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color="no intervention")) +
+                geom_line(data = rv$res_int, 
+                          aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2,
+                              color="with intervention"))
+            }
             browser()
             }else{
                 shinyalert("Oops!", "Malaria model is currently not available. Try COVID-19 instead!", type = "error")
@@ -208,13 +221,9 @@ shinyServer(function(input, output) {
         })    
 
     })
-
-    set.seed(122)
-    histdata <- rnorm(500)
     
     output$plot1 <- renderPlot({
-        data <- histdata[seq_len(input$n_pop/100000)]
-        hist(data)
+        rv$histogram
     })
 
 })
