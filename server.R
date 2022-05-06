@@ -2,7 +2,6 @@ library(shiny)
 library(shinydashboard)
 library(shinyalert)
 
-
 # source the function scripts
 source(here::here("model_scripts", "0_load_packages.R"))
 source(here::here("model_scripts", "2_M1_function.R"))
@@ -91,7 +90,7 @@ shinyServer(function(input, output) {
             # population parameters for covid
             if(input$disease =="covid-19"){
                 #population size
-                output[[1]] <-sliderInput("n_pop", "size of the target population", value = people_value, min = people_min , max = people_max)
+                output[[1]] <-sliderInput("n_pop", "size of the target population", value = 1000000, min = 100 , max = 2000000)
                 
                 #infected people
                 output[[2]] <-sliderInput("p_recovered", "% of population who got COVID-19 in the past 12 months (%)", value = 0, min = 0, max = 100)
@@ -169,8 +168,8 @@ shinyServer(function(input, output) {
             # adjust intervention parameters
             ## Vaccination
             if(sum("Vaccination" %in% input$interventions, na.rm=T)>0){
-                rv$init_n$V1 <- input$n_pop*input$p_vac_1/100
-                rv$init_n$V2 <- input$n_pop*input$p_vac_2/100
+                rv$init_n$V1 <- input$n_pop * input$p_vac_1 / 100
+                rv$init_n$V2 <- input$n_pop * input$p_vac_2 / 100
                 rv$init_n$S <- rv$init_n$S - rv$init_n$V1 - rv$init_n$V2
                 rv$parm_int$vac_daily <- input$vac_dose
             }
@@ -204,7 +203,9 @@ shinyServer(function(input, output) {
             rv$histogram <- if(is.null(input$interventions)){
               ggplot() +
                 geom_line(data = rv$res_base, 
-                          aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color="no intervention"))
+                          aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color="no intervention")) +
+                ylab("Daily Cases")
+            #browser()
             }
             else{
               ggplot() + 
@@ -212,9 +213,10 @@ shinyServer(function(input, output) {
                           aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color="no intervention")) +
                 geom_line(data = rv$res_int, 
                           aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2,
-                              color="with intervention"))
+                              color="with intervention")) +
+                ylab("Daily Cases")
             }
-            browser()
+            # browser()
             }else{
                 shinyalert("Oops!", "Malaria model is currently not available. Try COVID-19 instead!", type = "error")
             }
@@ -224,6 +226,9 @@ shinyServer(function(input, output) {
     
     output$plot1 <- renderPlot({
         rv$histogram
+    })
+    output$table1 <- renderTable({
+      
     })
 
 })

@@ -2,9 +2,7 @@ library(shiny)
 library(shinydashboard)
 
 #framing parameters for population for sidebar sliders
-people_min <- 100
-people_max <- 2000000
-people_value <- people_max/2
+
 
 shinyUI(dashboardPage(
     dashboardHeader(title = "APSTA-GE-2358 Final Project"),
@@ -118,6 +116,13 @@ shinyUI(dashboardPage(
                         box(plotOutput("plot1", height = 250)),
                         
                         
+                    ),
+                    fluidRow(
+                      
+                      #test histogram
+                      box(textOutput("table1")),
+                      
+                      
                     )
             ),
             
