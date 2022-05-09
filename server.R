@@ -221,23 +221,40 @@ shinyServer(function(input, output) {
                   plot.title = element_text(color="black", size=20, face="bold.italic"))
             }
             
-            rv$table_base <- rv$res_base %>%
-              tail(1) %>% 
-              transmute(total_case = as.integer(A+I+Q+H+AV1+IV1+QV1+HV1+AV2+IV2+QV2+HV2+R+RV1+RV2+D+DV1+DV2))
-            colnames(rv$table_base) = c("Without Intervention")
+            rv$table_base_dh <- rv$res_base %>%
+              select(H) %>% 
+              colSums() %>%
+              as.matrix()
             
-            rv$table_int <- rv$res_int %>%
-              tail(1) %>% 
-              transmute(total_case = as.integer(A+I+Q+H+AV1+IV1+QV1+HV1+AV2+IV2+QV2+HV2+R+RV1+RV2+D+DV1+DV2))
-            colnames(rv$table_int) = c("With Intervention")
+            rv$table_int_dh <- rv$res_int %>%
+              select(H) %>% 
+              colSums() %>%
+              as.matrix()
+            
+            rv$table_base_total <- rv$res_base %>%
+              transmute(total_case = A+I+Q+H+AV1+IV1+QV1+HV1+AV2+IV2+QV2+HV2+R+RV1+RV2+D+DV1+DV2,
+                        death = D)
+            
+            rv$table_int_total <- rv$res_int %>%
+              transmute(total_case = A+I+Q+H+AV1+IV1+QV1+HV1+AV2+IV2+QV2+HV2+R+RV1+RV2+D+DV1+DV2,
+                        death = D)
             
             rv$table <- if(is.null(input$interventions)){
-              rv$table_base
+              data.frame("Columns" = c("Total cases","Total Death","Total Hospitalized Days"),
+                "Without_intervention"=rbind(rv$table_base_total[input$t_max*30, 1],
+                                             rv$table_base_total[input$t_max*30, 2],
+                                                      rv$table_base_dh))
+              
             }
             else{
-              cbind(rv$table_base,rv$table_int)
+              data.frame("Columns" = c("Total cases","Total Death","Total Hospitalized Days"),
+                         "Without_intervention"= rbind(rv$table_base_total[input$t_max*30,1],
+                                                       rv$table_base_total[input$t_max*30,2],
+                                                       rv$table_base_dh), 
+                         "With_intervention"= rbind(rv$table_int_total[input$t_max*30,1],
+                                                    rv$table_int_total[input$t_max*30,2],
+                                                    rv$table_int_dh))
             }
-            rv$table <- cbind(data.frame(" "="Total Cases"),rv$table)
               
             # browser()
             }else{
