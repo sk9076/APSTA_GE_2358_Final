@@ -221,12 +221,12 @@ shinyServer(function(input, output) {
                   plot.title = element_text(color="black", size=20, face="bold.italic"))
             }
             
-            rv$table_base_dh <- rv$res_base %>%
+            rv$table_base_h <- rv$res_base %>%
               select(H) %>% 
               colSums() %>%
               as.matrix()
             
-            rv$table_int_dh <- rv$res_int %>%
+            rv$table_int_h <- rv$res_int %>%
               select(H) %>% 
               colSums() %>%
               as.matrix()
@@ -239,21 +239,38 @@ shinyServer(function(input, output) {
               transmute(total_case = A+I+Q+H+AV1+IV1+QV1+HV1+AV2+IV2+QV2+HV2+R+RV1+RV2+D+DV1+DV2,
                         death = D)
             
+            rv$cost_base <- input$c_outp*as.numeric(rv$table_base_total[input$t_max*30, 1])
+            + input$c_hosp * as.numeric(rv$table_base_h)
+            
+            rv$cost_vac <- if(sum("Vaccination" %in% input$interventions, na.rm=T)!=0){
+              input$c_outp*as.numeric(rv$table_int_total[input$t_max*30, 1])
+              + input$c_hosp * as.numeric(rv$table_int_h) + 
+                (min(input$t_max*input$vac_dose, input$n_pop*(1-input$p_vac_1/100) + input$n_pop*(1-input$p_vac_2/100)) + input$n_pop*input$p_vac_1/100 + input$n_pop*input$p_vac_2/100)*input$c_vac 
+            }
+            else{
+              input$c_outp*as.numeric(rv$table_int_total[input$t_max*30, 1])
+              + input$c_hosp * as.numeric(rv$table_int_h)
+              }
+            
             rv$table <- if(is.null(input$interventions)){
-              data.frame("Columns" = c("Total cases","Total Death","Total Hospitalized Days"),
+              data.frame("Columns" = c("Total cases","Total Death","Total Hospitalized Days", "Total Cost"),
                 "Without_intervention"=rbind(rv$table_base_total[input$t_max*30, 1],
                                              rv$table_base_total[input$t_max*30, 2],
-                                                      rv$table_base_dh))
+                                             rv$table_base_h,
+                                             rv$cost_base
+                                             ))
               
             }
             else{
-              data.frame("Columns" = c("Total cases","Total Death","Total Hospitalized Days"),
+              data.frame("Columns" = c("Total cases","Total Death","Total Hospitalized Days", "Total Cost"),
                          "Without_intervention"= rbind(rv$table_base_total[input$t_max*30,1],
                                                        rv$table_base_total[input$t_max*30,2],
-                                                       rv$table_base_dh), 
+                                                       rv$table_base_h,
+                                                       rv$cost_base), 
                          "With_intervention"= rbind(rv$table_int_total[input$t_max*30,1],
                                                     rv$table_int_total[input$t_max*30,2],
-                                                    rv$table_int_dh))
+                                                    rv$table_int_h,
+                                                    rv$cost_vac))
             }
               
             # browser()
