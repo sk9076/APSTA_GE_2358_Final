@@ -188,7 +188,8 @@ shinyServer(function(input, output) {
                                times=1:(input$t_max*30),
                                func=M1,
                                parms=unlist(rv$parm_base), 
-                               method = "rk4") %>% as.data.frame()
+                               method = "rk4") %>% as.data.frame() %>% 
+              mutate(group = "without invervention")
             
             
             # run intervention model
@@ -197,28 +198,55 @@ shinyServer(function(input, output) {
                               ## Run different model when Quarantine is chosen
                               func= ifelse(sum("Quarantine" %in% input$interventions, na.rm=T)>0, M1_q,M1),
                               parms=unlist(rv$parm_int), 
-                              method = "rk4") %>% as.data.frame() 
+                              method = "rk4") %>% as.data.frame() %>%
+              mutate(group="with intervention")
+            rv$res_total <- rbind(rv$res_int,rv$res_base)
             rv$daily_cases <- if(is.null(input$interventions)){
-              ggplot(data = rv$res_base, aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color ="no intervention")) +
-                geom_bar(stat="identity", width=0.01) +
-                theme_classic() +
-                ylab("Number of Cases") + 
-                ggtitle("Daily Cases") + 
-                theme(
-                  plot.title = element_text(color="black", size=20, face="bold.italic"))
+              if(input$pype == F){
+                ggplot(data = rv$res_base, aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2,color = "All Cases")) +
+                  geom_bar(stat="identity", width=0.01) +
+                  theme_classic() +
+                  ylab("Number of Cases") + 
+                  ggtitle("Daily Cases with No Intervention") + 
+                  theme(
+                    plot.title = element_text(color="black", size=20, face="bold.italic"))
+              }
+              else{
+                ggplot(data = rv$res_base, aes(x=time,y = D, color = "Death cases")) +
+                  geom_bar(stat="identity", width=0.01) +
+                  geom_bar(data = rv$res_base, aes(x=time,y = H, color = "Hospitalized cases"),stat="identity", width=0.01) + 
+                  geom_bar(data = rv$res_base, aes(x=time,y = A+I+Q+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color = "Other Cases"),stat="identity", width=0.01) + 
+                  theme_classic() +
+                  ylab("Number of Cases") + 
+                  ggtitle("Daily Cases with No Intervention") + 
+                  theme(
+                    plot.title = element_text(color="black", size=20, face="bold.italic"))
+              }
             #browser()
             }
             else{
-              ggplot(data = rv$res_base, 
-                     aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color="no intervention")) + 
-                geom_bar(stat="identity", width=0.01) +
-                geom_bar(data = rv$res_int, 
-                          aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2,
-                             color ="with intervention"),stat="identity", width=0.01) +
-                ylab("Number of Cases") + 
-                ggtitle("Daily Cases") + 
-                theme(
-                  plot.title = element_text(color="black", size=20, face="bold.italic"))
+              if(input$pype == F){
+                ggplot(data = rv$res_total, aes(x=time,y = A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color = "All cases")) +
+                  geom_bar(stat="identity", width=0.01) + 
+                  theme_classic() +
+                  ylab("Number of Cases") + 
+                  ggtitle("Daily Cases Without v.s. With Intervention") + 
+                  theme(
+                    plot.title = element_text(color="black", size=20, face="bold.italic")) +
+                  facet_grid(~group)
+              }
+              else{
+                ggplot(data = rv$res_total, aes(x=time,y = D, color = "Death cases")) +
+                  geom_bar(stat="identity", width=0.01) +
+                  geom_bar(data = rv$res_total, aes(x=time,y = H, color = "Hospitalized cases"),stat="identity", width=0.01) + 
+                  geom_bar(data = rv$res_total, aes(x=time,y = A+I+Q+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color = "Other Cases"),stat="identity", width=0.01) + 
+                  theme_classic() +
+                  ylab("Number of Cases") + 
+                  ggtitle("Daily Cases Without v.s. With Intervention") + 
+                  theme(
+                    plot.title = element_text(color="black", size=20, face="bold.italic")) +
+                  facet_grid(~group)
+              }
             }
             
             rv$table_base_h <- rv$res_base %>%
@@ -270,7 +298,8 @@ shinyServer(function(input, output) {
                          "With_intervention"= rbind(rv$table_int_total[input$t_max*30,1],
                                                     rv$table_int_total[input$t_max*30,2],
                                                     rv$table_int_h,
-                                                    rv$cost_vac))
+                                                    rv$cost_vac)) %>%
+                mutate(difference = Without_intervention-With_intervention)
             }
               
             # browser()
@@ -284,6 +313,7 @@ shinyServer(function(input, output) {
     output$daily_cases <- renderPlot({
         rv$daily_cases
     })
+    
     output$table1 <- renderTable({
       rv$table
     }, caption = "Summary Table",
@@ -291,3 +321,4 @@ shinyServer(function(input, output) {
     caption.width = getOption("xtable.caption.width", NULL))
 
 })
+
