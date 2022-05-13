@@ -285,7 +285,8 @@ shinyServer(function(input, output) {
                                              rv$table_base_total[input$t_max*30, 2],
                                              rv$table_base_h,
                                              rv$cost_base
-                                             ))
+                                             )) %>%
+                round(digits=0)
               
             }
             else{
@@ -298,7 +299,8 @@ shinyServer(function(input, output) {
                                                     rv$table_int_total[input$t_max*30,2],
                                                     rv$table_int_h,
                                                     rv$cost_vac)) %>%
-                mutate(difference = Without_intervention-With_intervention)
+                mutate(difference = Without_intervention-With_intervention) %>%
+                round(digits=0)
             }
               
             # browser()
