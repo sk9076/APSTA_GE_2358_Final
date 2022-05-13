@@ -191,12 +191,12 @@ shinyServer(function(input, output) {
                                method = "rk4") %>% as.data.frame() %>% 
               mutate(group = "without invervention")
             
-            
+            browser()
             # run intervention model
             rv$res_int <- ode(y=unlist(rv$init_n),
                               times=1:(input$t_max*30),
                               ## Run different model when Quarantine is chosen
-                              func= ifelse(sum("Quarantine" %in% input$interventions, na.rm=T)>0, M1_q,M1),
+                              func= ifelse(sum("Quarantine for symptomatic cases" %in% input$interventions, na.rm=T)>0, M1_q,M1),
                               parms=unlist(rv$parm_int), 
                               method = "rk4") %>% as.data.frame() %>%
               mutate(group="with intervention")
