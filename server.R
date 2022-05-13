@@ -191,7 +191,6 @@ shinyServer(function(input, output) {
                                method = "rk4") %>% as.data.frame() %>% 
               mutate(group = "without invervention")
             
-            browser()
             # run intervention model
             rv$res_int <- ode(y=unlist(rv$init_n),
                               times=1:(input$t_max*30),
