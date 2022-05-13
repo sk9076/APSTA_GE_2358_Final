@@ -49,7 +49,7 @@ M1_q <- function(time,state,parm){
     pi2 <- min(vac_daily, V1+RV1)
     pi1 <- min(S+R, vac_daily - pi2)
     
-    Lambda= c*(betaa*(A+AV1+AV2)+betas*(I+IV1+IV2)+0.25*betas*(H+HV1+HV2))/(S+E+A+I+Q+H+R+V1+EV1+AV1+IV1+QV1+HV1+RV1+V2+EV2+AV2+IV2+QV2+HV2)
+    Lambda= c*(betaa*(A+AV1+AV2)+betas*(I+IV1+IV2)+0.25*betas*(H+HV1+HV2+Q+QV1+QV2))/(S+E+A+I+Q+H+R+V1+EV1+AV1+IV1+QV1+HV1+RV1+V2+EV2+AV2+IV2+QV2+HV2)
     
     #omega is really lamda
     dS=-Lambda*S-(1/14)*S/(S+R)*pi1
