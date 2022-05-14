@@ -248,6 +248,7 @@ shinyServer(function(input, output) {
               }
             }
             
+            
             rv$table_base_h <- rv$res_base %>%
               select(H) %>% 
               colSums() %>%
@@ -280,27 +281,25 @@ shinyServer(function(input, output) {
               }
             
             rv$table <- if(is.null(input$interventions)){
-              data.frame("Columns" = c("Total cases","Total Death","Total Hospitalized Days", "Total Cost"),
-                "Without_intervention"=rbind(rv$table_base_total[input$t_max*30, 1],
-                                             rv$table_base_total[input$t_max*30, 2],
-                                             rv$table_base_h,
-                                             rv$cost_base
-                                             )) %>%
-                round(digits=0)
+              data.frame(Columns = c("Total cases","Total Death","Total Hospitalized Days", "Total Cost"),
+                Without_intervention=rbind(as.integer(rv$table_base_total[input$t_max*30, 1]),
+                                             as.integer(rv$table_base_total[input$t_max*30, 2]),
+                                             as.integer(rv$table_base_h),
+                                             as.integer(rv$cost_base)
+                                             ))
               
             }
             else{
-              data.frame("Columns" = c("Total cases","Total Death","Total Hospitalized Days", "Total Cost"),
-                         "Without_intervention"= rbind(rv$table_base_total[input$t_max*30,1],
-                                                       rv$table_base_total[input$t_max*30,2],
-                                                       rv$table_base_h,
-                                                       rv$cost_base), 
-                         "With_intervention"= rbind(rv$table_int_total[input$t_max*30,1],
-                                                    rv$table_int_total[input$t_max*30,2],
-                                                    rv$table_int_h,
-                                                    rv$cost_vac)) %>%
-                mutate(difference = Without_intervention-With_intervention) %>%
-                round(digits=0)
+              data.frame(Columns = c("Total cases","Total Death","Total Hospitalized Days", "Total Cost"),
+                         Without_intervention= rbind(as.integer(rv$table_base_total[input$t_max*30,1]),
+                                                     as.integer(rv$table_base_total[input$t_max*30,2]),
+                                                     as.integer(rv$table_base_h),
+                                                     as.integer(rv$cost_base)), 
+                         With_intervention= rbind(as.integer(rv$table_int_total[input$t_max*30,1]),
+                                                  as.integer(rv$table_int_total[input$t_max*30,2]),
+                                                  as.integer(rv$table_int_h),
+                                                  as.integer(rv$cost_vac))) %>%
+                mutate(difference = Without_intervention-With_intervention)
             }
               
             # browser()
@@ -310,7 +309,61 @@ shinyServer(function(input, output) {
         })    
 
     })
-    
+    observeEvent(input$pype, {
+      isolate({
+        validate(
+          need(nrow(rv$res_base)!=0,"please run simulation")
+        )
+        rv$daily_cases <- if(is.null(input$interventions)){
+          if(input$pype == F){
+            ggplot(data = rv$res_base, aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2,color = "All Cases")) +
+              geom_bar(stat="identity", width=0.01) +
+              theme_classic() +
+              ylab("Number of Cases") + 
+              ggtitle("Daily Cases with No Intervention") + 
+              theme(
+                plot.title = element_text(color="black", size=20, face="bold.italic"))
+          }
+          else{
+            ggplot(data = rv$res_base, aes(x=time,y = D, color = "Death cases")) +
+              geom_bar(stat="identity", width=0.01) +
+              geom_bar(data = rv$res_base, aes(x=time,y = H, color = "Hospitalized cases"),stat="identity", width=0.01) + 
+              geom_bar(data = rv$res_base, aes(x=time,y = A+I+Q+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color = "Other Cases"),stat="identity", width=0.01) + 
+              theme_classic() +
+              ylab("Number of Cases") + 
+              ggtitle("Daily Cases with No Intervention") + 
+              theme(
+                plot.title = element_text(color="black", size=20, face="bold.italic"))
+          }
+          #browser()
+        }
+        else{
+          if(input$pype == F){
+            ggplot(data = rv$res_total, aes(x=time,y = A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color = "All cases")) +
+              geom_bar(stat="identity", width=0.01) + 
+              theme_classic() +
+              ylab("Number of Cases") + 
+              ggtitle("Daily Cases Without v.s. With Intervention") + 
+              theme(
+                plot.title = element_text(color="black", size=20, face="bold.italic")) +
+              facet_grid(~group)
+          }
+          else{
+            ggplot(data = rv$res_total, aes(x=time,y = D, color = "Death cases")) +
+              geom_bar(stat="identity", width=0.01) +
+              geom_bar(data = rv$res_total, aes(x=time,y = H, color = "Hospitalized cases"),stat="identity", width=0.01) + 
+              geom_bar(data = rv$res_total, aes(x=time,y = A+I+Q+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color = "Other Cases"),stat="identity", width=0.01) + 
+              theme_classic() +
+              ylab("Number of Cases") + 
+              ggtitle("Daily Cases Without v.s. With Intervention") + 
+              theme(
+                plot.title = element_text(color="black", size=20, face="bold.italic")) +
+              facet_grid(~group)
+          }
+        }
+      })
+    })
+        
     output$daily_cases <- renderPlot({
         rv$daily_cases
     })

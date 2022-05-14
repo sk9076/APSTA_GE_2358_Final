@@ -114,12 +114,10 @@ shinyUI(dashboardPage(
                         # plots
                         box(plotOutput("daily_cases"),
                             checkboxInput(inputId = "pype", 
-                                               label = "Compare by Cases"),)
-                    ),
-                    fluidRow(
-                      # summary table
-                      box(tableOutput("table1"))
+                                               label = "Compare by Cases"),),
+                        box(tableOutput("table1")
                     )
+                )
             ),
             
             # Second tab content
