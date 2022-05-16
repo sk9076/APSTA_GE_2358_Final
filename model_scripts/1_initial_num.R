@@ -7,7 +7,7 @@ I0 <- 1
 Q0 <- 1
 H0 <- 1
 R0 <- 700000  # already recovered ones
-D0 <- 5000 # 
+D0 <- 1 # 
 V20 <- 1  #2010000, # people who received the 2nd dose
 V10 <- 1 #18642700, 19445178, 38820816 # people who recieved 1st dose vaccine
 S0 <- N-(E0+I0+A0+Q0+H0+R0+D0+V20+V10)

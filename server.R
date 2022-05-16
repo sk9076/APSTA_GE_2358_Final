@@ -83,9 +83,9 @@ shinyServer(function(input, output) {
     
     # Update the population parameter tab
     output$pop_parm_tab <- renderUI({
-        input$update_parm_tab
+        #input$update_parm_tab
         require(input$disease)
-        isolate({
+        #isolate({
             output <- tagList()
             # population parameters for covid
             if(input$disease =="covid-19"){
@@ -97,10 +97,10 @@ shinyServer(function(input, output) {
                 
                 if("Vaccination" %in% input$interventions){
                     #1st dose vaccine
-                    output[[3]] <-sliderInput("p_vac_1", "% of population who only received the 1st dose of vaccine", value = 0, min = 0, max = 100)
+                    output[[3]] <-sliderInput("p_vac_1", HTML("% of population who <u>only</u> received the 1st dose of vaccine"), value = 0, min = 0, max = 100)
                     
                     #second dose vaccine
-                    output[[4]] <-sliderInput("p_vac_2", "% of population who received the 2nd dose vaccine", value = 0, min = 0, max = 100)
+                    output[[4]] <-sliderInput("p_vac_2", "% of population who received full two doses of vaccine", value = 0, min = 0, max = 100)
                 }
                 # population parameters for covid
             }else if(input$disease == "malaria"){
@@ -117,15 +117,15 @@ shinyServer(function(input, output) {
             }
             
             return(output)
-        })
+        #})
     })
     
     # Update the disease parameter tab accordingly
     # Update the population parameter tab
     output$disease_parm_tab <- renderUI({
-        input$update_parm_tab
+        #input$update_parm_tab
         require(input$disease)
-        isolate({
+        #isolate({
             output <- tagList()
             # disease parameters for COVID-19
             if(input$disease =="covid-19"){
@@ -146,8 +146,18 @@ shinyServer(function(input, output) {
                 output[[5]]<-sliderInput("eir", "Effective innoculation rate (infectious bites/person/6 months", value = 3.9, min = 0, max = 20)
             }
             return(output)
-        })
+        #})
     })
+    
+    # Error message when the parameters are set wrong
+    observeEvent(input$p_vac_1|input$p_vac_2, {
+      require(input$p_vac_1 & input$p_vac_2)
+      if(input$p_vac_1 + input$p_vac_2 >=100){
+        shinyalert::shinyalert(title = "Wrong paramter input!",
+                               text = "Sum of vaccinated population should not exceed 100%")  
+      } 
+    }, ignoreInit=T, ignoreNULL=T
+    )
     
     # run the model
     observeEvent(input$run_model, {
@@ -199,56 +209,15 @@ shinyServer(function(input, output) {
                               parms=unlist(rv$parm_int), 
                               method = "rk4") %>% as.data.frame() %>%
               mutate(group="with intervention")
-            rv$res_total <- rbind(rv$res_int,rv$res_base)
-            rv$daily_cases <- if(is.null(input$interventions)){
-              if(input$pype == F){
-                ggplot(data = rv$res_base, aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2,color = "All Cases")) +
-                  geom_bar(stat="identity", width=0.01) +
-                  theme_classic() +
-                  ylab("Number of Cases") + 
-                  ggtitle("Daily Cases with No Intervention") + 
-                  theme(
-                    plot.title = element_text(color="black", size=20, face="bold.italic"))
-              }
-              else{
-                ggplot(data = rv$res_base, aes(x=time,y = D, color = "Death cases")) +
-                  geom_bar(stat="identity", width=0.01) +
-                  geom_bar(data = rv$res_base, aes(x=time,y = H, color = "Hospitalized cases"),stat="identity", width=0.01) + 
-                  geom_bar(data = rv$res_base, aes(x=time,y = A+I+Q+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color = "Other Cases"),stat="identity", width=0.01) + 
-                  theme_classic() +
-                  ylab("Number of Cases") + 
-                  ggtitle("Daily Cases with No Intervention") + 
-                  theme(
-                    plot.title = element_text(color="black", size=20, face="bold.italic"))
-              }
-            #browser()
-            }
-            else{
-              if(input$pype == F){
-                ggplot(data = rv$res_total, aes(x=time,y = A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color = "All cases")) +
-                  geom_bar(stat="identity", width=0.01) + 
-                  theme_classic() +
-                  ylab("Number of Cases") + 
-                  ggtitle("Daily Cases Without v.s. With Intervention") + 
-                  theme(
-                    plot.title = element_text(color="black", size=20, face="bold.italic")) +
-                  facet_grid(~group)
-              }
-              else{
-                ggplot(data = rv$res_total, aes(x=time,y = D, color = "Death cases")) +
-                  geom_bar(stat="identity", width=0.01) +
-                  geom_bar(data = rv$res_total, aes(x=time,y = H, color = "Hospitalized cases"),stat="identity", width=0.01) + 
-                  geom_bar(data = rv$res_total, aes(x=time,y = A+I+Q+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color = "Other Cases"),stat="identity", width=0.01) + 
-                  theme_classic() +
-                  ylab("Number of Cases") + 
-                  ggtitle("Daily Cases Without v.s. With Intervention") + 
-                  theme(
-                    plot.title = element_text(color="black", size=20, face="bold.italic")) +
-                  facet_grid(~group)
-              }
+            
+            # Plot the results
+            rv$res_total <- if(is.null(input$interventions)){
+              rv$res_base %>% gather("box", "n", -time, -group)
+              }else{
+              rbind(rv$res_int,rv$res_base) %>% gather("box", "n", -time, -group)
             }
             
-            
+            ## Table
             rv$table_base_h <- rv$res_base %>%
               select(H) %>% 
               colSums() %>%
@@ -285,7 +254,7 @@ shinyServer(function(input, output) {
                 Without_intervention=rbind(as.integer(rv$table_base_total[input$t_max*30, 1]),
                                              as.integer(rv$table_base_total[input$t_max*30, 2]),
                                              as.integer(rv$table_base_h),
-                                             as.integer(rv$cost_base)
+                                             sprintf("$ %.2f M", as.integer(rv$cost_base)/1000000)
                                              ))
               
             }
@@ -294,12 +263,18 @@ shinyServer(function(input, output) {
                          Without_intervention= rbind(as.integer(rv$table_base_total[input$t_max*30,1]),
                                                      as.integer(rv$table_base_total[input$t_max*30,2]),
                                                      as.integer(rv$table_base_h),
-                                                     as.integer(rv$cost_base)), 
+                                                     sprintf("$ %.2f M", as.integer(rv$cost_base)/1000000)), 
                          With_intervention= rbind(as.integer(rv$table_int_total[input$t_max*30,1]),
                                                   as.integer(rv$table_int_total[input$t_max*30,2]),
                                                   as.integer(rv$table_int_h),
-                                                  as.integer(rv$cost_vac))) %>%
-                mutate(difference = Without_intervention-With_intervention)
+                                                  sprintf("$ %.2f M", as.integer(rv$cost_vac)/1000000)),
+                         Difference = rbind(
+                           as.integer(rv$table_int_total[input$t_max*30,1] -rv$table_base_total[input$t_max*30,1]),
+                           as.integer(rv$table_int_total[input$t_max*30,2] -rv$table_base_total[input$t_max*30,2]),
+                           as.integer(rv$table_int_h - rv$table_base_h),
+                           sprintf("$ %.2f M", as.integer(rv$cost_vac-rv$cost_base)/1000000)
+                         )
+              )
             }
               
             # browser()
@@ -309,62 +284,32 @@ shinyServer(function(input, output) {
         })    
 
     })
-    observeEvent(input$pype, {
-      isolate({
-        validate(
-          need(nrow(rv$res_base)!=0,"please run simulation")
-        )
-        rv$daily_cases <- if(is.null(input$interventions)){
-          if(input$pype == F){
-            ggplot(data = rv$res_base, aes(x=time,y=A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2,color = "All Cases")) +
-              geom_bar(stat="identity", width=0.01) +
-              theme_classic() +
-              ylab("Number of Cases") + 
-              ggtitle("Daily Cases with No Intervention") + 
-              theme(
-                plot.title = element_text(color="black", size=20, face="bold.italic"))
-          }
-          else{
-            ggplot(data = rv$res_base, aes(x=time,y = D, color = "Death cases")) +
-              geom_bar(stat="identity", width=0.01) +
-              geom_bar(data = rv$res_base, aes(x=time,y = H, color = "Hospitalized cases"),stat="identity", width=0.01) + 
-              geom_bar(data = rv$res_base, aes(x=time,y = A+I+Q+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color = "Other Cases"),stat="identity", width=0.01) + 
-              theme_classic() +
-              ylab("Number of Cases") + 
-              ggtitle("Daily Cases with No Intervention") + 
-              theme(
-                plot.title = element_text(color="black", size=20, face="bold.italic"))
-          }
-          #browser()
-        }
-        else{
-          if(input$pype == F){
-            ggplot(data = rv$res_total, aes(x=time,y = A+I+Q+H+D+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color = "All cases")) +
-              geom_bar(stat="identity", width=0.01) + 
-              theme_classic() +
-              ylab("Number of Cases") + 
-              ggtitle("Daily Cases Without v.s. With Intervention") + 
-              theme(
-                plot.title = element_text(color="black", size=20, face="bold.italic")) +
-              facet_grid(~group)
-          }
-          else{
-            ggplot(data = rv$res_total, aes(x=time,y = D, color = "Death cases")) +
-              geom_bar(stat="identity", width=0.01) +
-              geom_bar(data = rv$res_total, aes(x=time,y = H, color = "Hospitalized cases"),stat="identity", width=0.01) + 
-              geom_bar(data = rv$res_total, aes(x=time,y = A+I+Q+AV1+IV1+QV1+HV1+DV1+AV2+IV2+QV2+HV2+DV2, color = "Other Cases"),stat="identity", width=0.01) + 
-              theme_classic() +
-              ylab("Number of Cases") + 
-              ggtitle("Daily Cases Without v.s. With Intervention") + 
-              theme(
-                plot.title = element_text(color="black", size=20, face="bold.italic")) +
-              facet_grid(~group)
-          }
-        }
-      })
-    })
+    
         
     output$daily_cases <- renderPlot({
+      input$pype
+      req(rv$res_total)
+      rv$daily_cases <- if(input$pype == F){
+        rv$res_total %>% filter(box %in% c("A","I","Q", "H", "D", "AV1", "IV1", "QV1", "HV1", "DV1", "AV2", "IV2", "QV2", "HV2", "DV2")) %>%
+          group_by(time, group) %>% summarize(n_tot = sum(n)) %>% ungroup()%>%
+          ggplot(aes(time, n_tot)) + geom_bar(stat = "identity") + theme_classic() + ylab("Number of Cases") + 
+          ggtitle("Daily Cases") + 
+          theme(
+            plot.title = element_text(color="black", size=20, face="bold.italic")) + facet_grid(.~group)
+        
+      }
+      else{
+        rv$res_total %>% filter(box %in% c("A","I","Q", "H", "D", "AV1", "IV1", "QV1", "HV1", "DV1", "AV2", "IV2", "QV2", "HV2", "DV2")) %>%
+          mutate(cat = ifelse(box %in% c("D", "DV1", "DV2"), "Fatal cases",
+                              ifelse(box %in% c("H", "HV1", "HV2"), "Hospitalized", "Other cases")))%>%
+          group_by(time, cat, group) %>% summarize(n_tot = sum(n)) %>% ungroup() %>%
+          ggplot(aes(time, n_tot)) + geom_bar(aes(fill = cat), stat = "identity") + theme_classic() + ylab("Number of Cases") + 
+          ggtitle("Daily Cases") + 
+          theme(
+            plot.title = element_text(color="black", size=20, face="bold.italic"),
+            legend.title = element_blank(),
+            legend.position = "bottom") + facet_grid(.~group)
+      }
         rv$daily_cases
     })
     
@@ -374,5 +319,31 @@ shinyServer(function(input, output) {
     caption.placement = getOption("xtable.caption.placement", "top"), 
     caption.width = getOption("xtable.caption.width", NULL))
 
+    output$text <- renderText({
+      input$run_model
+      isolate({
+      if(!is.null(input$interventions)){
+      inc.case <- as.integer(rv$table_int_total[input$t_max*30,1] -rv$table_base_total[input$t_max*30,1])
+      inc.death <- as.integer(rv$table_int_total[input$t_max*30,2] -rv$table_base_total[input$t_max*30,2])
+      inc.hosp <- as.integer(rv$table_int_h - rv$table_base_h)
+      inc.cost <- as.integer(rv$cost_vac-rv$cost_base)/1000000
+      text1 <- sprintf("Intervention can avert %i cases including %i deaths and %i hospitalization days while %s %.2f million USD.",
+              inc.case*(-1),
+              inc.death*(-1),
+              inc.hosp*(-1),
+              ifelse(inc.cost>0, "spending", "saving"),
+              abs(inc.cost)
+      )
+      text2 <- if(inc.cost<0){
+        "Net, the intervention is cost-saving."
+      }else{
+        browser()
+        sprintf("Net, the cost per averted case is estimated to be %.2f USD", abs(inc.cost*1000000/inc.case))
+      }
+      
+      c(text1, text2)
+      }
+      })
+    })
 })
 

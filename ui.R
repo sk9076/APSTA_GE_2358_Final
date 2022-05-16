@@ -53,10 +53,10 @@ shinyUI(dashboardPage(
             uiOutput("other_cost"),
             
             #button to move to the next step
-            actionButton(
-                inputId = 'update_parm_tab',
-                label = "Update Parameters"
-            ),
+            #actionButton(
+            #    inputId = 'update_parm_tab',
+            #    label = "Update Parameters"
+            #),
             
             #another tab for a report if necessary 
             menuItem("Report", tabName = "report", icon = icon("th"))
@@ -77,7 +77,6 @@ shinyUI(dashboardPage(
             # First tab content
             tabItem(tabName = "simulation",
                     fluidRow(
-                        
                         #box for population parameters
                         column(12, 
                                box(
@@ -103,21 +102,39 @@ shinyUI(dashboardPage(
                     fluidRow(
                         actionButton(
                             inputId = 'run_model',
-                            label = "Run Simulation"
+                            label = "Run Simulation",
+                            style="padding:4px; font-size:120%; font-weight: bold; color:white; width: 96%; 
+                                    background-color: #0b5b67; border-color: transparent"
                         ),
-                        br(),
-                        align = "right"
+                        align = "center"
                     ),
-                    
+                    br(),                        
                     # Outputs
                     fluidRow(
+                        column(12,
+                               div(
+                               textOutput("text"),
+                               style = "font-weight: bold; size:12"
+                               ),
+                               align = "center")
+                    ),
+                    br(),
+                    fluidRow(
+                        column(12,
                         # plots
-                        box(plotOutput("daily_cases"),
-                            checkboxInput(inputId = "pype", 
-                                               label = "Compare by Cases"),),
-                        box(tableOutput("table1")
+                         plotOutput("daily_cases"),
+                           checkboxInput(inputId = "pype", 
+                                              label = "Show cases break-down (i.e. hospitalized, death)"),
+                        align = "center")
+                    ),
+                    fluidRow(
+                        column(12,
+                        #table
+                        tableOutput("table1"),
+                        align = "center"
+                        )
                     )
-                )
+                
             ),
             
             # Second tab content
